@@ -429,12 +429,11 @@ struct NotePageView: View {
                         }
                     }
                 }
-        .overlay(toolbar,alignment: .center) // Apply toolbar as an overlay
-        .overlay(attemptToPage,alignment: .bottom) // Apply page indicator as an overlay
+        .overlay(toolbar,alignment: .center)
+        .overlay(attemptToPage,alignment: .bottom)
             .onAppear {
                 setupToolPicker()
                 loadDrawingData(for: page)
-                // History is cleared on disappear, so no need to clear on appear unless desired
             }
             .onDisappear {
                 saveCurrentDrawingData()
