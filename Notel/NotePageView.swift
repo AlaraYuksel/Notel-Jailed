@@ -509,20 +509,22 @@ struct NotePageView: View {
                 .accessibilityLabel("Sonraki Sayfa")
                 
                 // MARK: - Sayfa Silme Butonu
-                            if let currentPage = page {
-                                Button(role: .destructive) { // .destructive rolü, butona kırmızı renk verir
-                                    deletePage(currentPage)
-                                } label: {
-                                    Label("Bu Sayfayı Sil", systemImage: "trash.fill")
-                                }
-                                .padding()
-                                .background(Color.red.opacity(0.1)) // Hafif kırmızı arka plan
-                                .cornerRadius(10)
-                            } else {
-                                Text("Sayfa silmek için mevcut sayfa yok.")
-                                    .foregroundColor(.gray)
-                            }
-                        
+                if let currentPage = page {
+                    Button(role: .destructive) {
+                        deletePage(currentPage)
+                    } label: {
+                        // Label'daki metin, erişilebilirlik (VoiceOver) için kalır ama görsel olarak gizlenir.
+                        Label("Bu Sayfayı Sil", systemImage: "trash.fill")
+                    }
+                    .labelStyle(.iconOnly) // Sadece ikonu gösterir
+                    .padding(10)
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(Circle()) // Dairesel bir buton için
+
+                } else {
+                    Text("Sayfa silmek için mevcut sayfa yok.")
+                        .foregroundColor(.gray)
+                }
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
