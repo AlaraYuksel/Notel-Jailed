@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Mikrofonu ses kaydı için kullanıyoruz.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Fotoğraflarınıza erişmemiz gerekiyor.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Transkript için gerekli olan izin.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
