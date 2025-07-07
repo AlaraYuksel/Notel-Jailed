@@ -496,6 +496,8 @@ struct NotePageView: View {
 
                 Spacer() // Push page navigation buttons to the ends
 */
+                
+                
                 Button(action: nextPage) {
                     Image(systemName: "chevron.right")
                         .font(.title2)
@@ -505,6 +507,22 @@ struct NotePageView: View {
                 }
                 .disabled(isLastPage())
                 .accessibilityLabel("Sonraki Sayfa")
+                
+                // MARK: - Sayfa Silme Butonu
+                            if let currentPage = page {
+                                Button(role: .destructive) { // .destructive rolü, butona kırmızı renk verir
+                                    deletePage(currentPage)
+                                } label: {
+                                    Label("Bu Sayfayı Sil", systemImage: "trash.fill")
+                                }
+                                .padding()
+                                .background(Color.red.opacity(0.1)) // Hafif kırmızı arka plan
+                                .cornerRadius(10)
+                            } else {
+                                Text("Sayfa silmek için mevcut sayfa yok.")
+                                    .foregroundColor(.gray)
+                            }
+                        
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
@@ -1001,7 +1019,61 @@ struct NotePageView: View {
             // Consider showing user alert
         }
     }
+    
+    //Delete page fonksiyonu denemesi
+    
+    private func deletePage(_ pageToDelete: Page) {
+        guard let viewContext = pageToDelete.managedObjectContext else {
+            print("Error: Cannot delete page, no managed object context found.")
+            return
+        }
 
+        let deletedPageIndex = pageToDelete.pageIndex
+
+        var pageToTransitionTo: Page? = nil
+        if pageToDelete == page {
+            if let currentIndex = pages.firstIndex(of: pageToDelete) {
+                if currentIndex + 1 < pages.count {
+                    pageToTransitionTo = pages[currentIndex + 1]
+                } else if currentIndex > 0 {
+                    pageToTransitionTo = pages[currentIndex - 1]
+                }
+            }
+        }
+        viewContext.delete(pageToDelete)
+        do {
+            try viewContext.save()
+            print("Page deleted successfully: Index \(deletedPageIndex)")
+
+            var index: Int16 = 0
+            for page in pages.sorted(by: { $0.pageIndex < $1.pageIndex }) {
+                if page.pageIndex != index {
+                    page.pageIndex = index
+                }
+                index += 1
+            }
+            try viewContext.save()
+            print("Pages re-indexed successfully.")
+
+            DispatchQueue.main.async {
+                if let transitionPage = pageToTransitionTo {
+                    self.page = transitionPage
+                    print("Current page set to: Index \(transitionPage.pageIndex)")
+                } else if let firstRemainingPage = self.pages.first {
+                    self.page = firstRemainingPage
+                    print("Current page set to first remaining page: Index \(firstRemainingPage.pageIndex)")
+                } else {
+                    print("No pages left after deletion. Adding a new default page.")
+                    self.addNewPage()
+                }
+            }
+
+        } catch {
+            print("Error deleting or re-indexing pages: \(error.localizedDescription)")
+            viewContext.rollback()
+        }
+    }
+    
     // MARK: - Tool Selection
     // Located in NotePageView.swift
     // Around Page 22-23

@@ -1,11 +1,3 @@
-//
-//  AttachmentView.swift
-//  Notel
-//
-//  Created by Alara yüksel on 24.04.2025.
-//
-//
-
 import SwiftUI
 import CoreData
 import PencilKit
@@ -15,12 +7,14 @@ struct AttachmentView: View {
     @ObservedObject var attachment: Attachment
     
     var onMoveEnded: ((UUID, Float, Float, Float, Float) -> Void)?
+    // Add a closure for when the attachment is deleted
+    var onDelete: ((UUID) -> Void)?
 
     @State private var dragOffset: CGSize = .zero
     @State private var isEditing = false
     @State private var currentWidth: CGFloat = 0
     @State private var currentHeight: CGFloat = 0
-    @State private var attachmentCanvasView = PKCanvasView()
+    // private var attachmentCanvasView = PKCanvasView() // This line seems unused
 
     var body: some View {
         ZStack {
@@ -61,6 +55,7 @@ struct AttachmentView: View {
                     )
                 
                 if isEditing {
+                    // Resize Handles
                     ResizeHandles(
                         currentWidth: $currentWidth,
                         currentHeight: $currentHeight,
@@ -68,6 +63,19 @@ struct AttachmentView: View {
                     ) {
                         saveSizeChanges()
                     }
+                    
+                    // Delete Button
+                    Button(action: {
+                        deleteAttachment()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.red)
+                            .background(Circle().fill(Color.white))
+                            .shadow(radius: 5)
+                    }
+                    // Position the delete button (e.g., top-right corner of the attachment)
+                    .offset(x: (currentWidth / 2) + 4, y: (-currentHeight / 2) - 4)
                 }
             } else {
                 Text("Resim Yüklenemedi")
@@ -79,6 +87,8 @@ struct AttachmentView: View {
         .onAppear {
             currentWidth = CGFloat(attachment.width)
             currentHeight = CGFloat(attachment.height)
+            // Initialize dragOffset based on attachment's position if needed for initial placement
+            // dragOffset = CGSize(width: CGFloat(attachment.positionX), height: CGFloat(attachment.positionY))
         }
     }
     
@@ -100,6 +110,14 @@ struct AttachmentView: View {
         attachment.width = Float(currentWidth)
         attachment.height = Float(currentHeight)
         saveContext()
+    }
+    
+    private func deleteAttachment() {
+        if let id = attachment.id {
+            viewContext.delete(attachment)
+            saveContext()
+            onDelete?(id) // Notify parent view of deletion
+        }
     }
 }
 
